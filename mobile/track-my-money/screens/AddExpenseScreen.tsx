@@ -1,19 +1,28 @@
 import React, { useState } from "react";
 import { Alert, SafeAreaView, StyleSheet } from "react-native";
-import { Card, CardContent, CardDescription, CardHeader, Label, Form, Button } from "semantic-ui-react";
 import ExpensesService from "../services/ExpensesService";
-import { IExpense, IProduct } from "../models/Models";
+import { IExpense, IExpenseCategory, IProduct, IProductCategory } from "../models/Models";
 import { jSXElement } from "@babel/types";
 import { ScrollView } from "react-native-gesture-handler";
+import { TextInput } from "react-native-paper";
 
 export default function AddExpenseScreen() {
   const expensesService = new ExpensesService();
-  const [state, setState] = useState({
-    isLoading: false,
+  const defaultState = {
     lastProductId: 0,
     expenseName: "",
     products: [{ id: 0, name: "", quantity: 1, amount: 0 }],
-  });
+  };
+  const [state, setState] = useState(defaultState);
+
+  const resetState = (): void => {
+    setState({
+      ...state,
+      lastProductId: defaultState.lastProductId,
+      expenseName: defaultState.expenseName,
+      products: defaultState.products,
+    });
+  };
 
   const addProductInput = (): void => {
     setState({
@@ -60,55 +69,63 @@ export default function AddExpenseScreen() {
     });
   };
 
+  const addExpense = async (): Promise<void> => {
+    const products: IProduct[] = state.products.map((x) => {
+      const category: IProductCategory = {
+        id: 1,
+        name: "testProductCategory",
+      };
+      const product: IProduct = {
+        id: Math.random(),
+        name: x.name,
+        amount: x.amount,
+        quantity: x.quantity,
+        category: category,
+      };
+      return product;
+    });
+
+    const category: IExpenseCategory = {
+      id: 1,
+      name: "testExpenseCategory",
+    };
+    const expense: IExpense = {
+      id: Math.random(),
+      name: state.expenseName,
+      amount: products.map((x) => x.amount).reduce((a, b) => a + b),
+      products: products,
+      category: category,
+    };
+
+    await expensesService.AddExpense(expense);
+    Alert.alert(`Expense ${expense.name} has been saved`);
+
+    resetState();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Form>
-          <Form.Field>
-            <label>Expense name</label>
-            <input type="text" name="name" onChange={(ev) => setExpensename(ev.target.value)} />
-          </Form.Field>
-          <Card.Group style={{ flexDirection: "column", alignItems: "center", margin: "10px" }}>
-            {state.products.map((x) => (
-              <Card key={x.id}>
-                <CardHeader>
-                  <Form.Field>
-                    <label>Product name</label>
-                    <input type="text" onChange={(ev) => setProductName(x.id, ev.target.value)} />
-                  </Form.Field>
-                </CardHeader>
-                <CardContent>
-                  <Form.Field>
-                    <label>Quantity</label>
-                    <input type="number" onChange={(ev) => setProductQuantity(x.id, parseInt(ev.target.value))} />
-                  </Form.Field>
-                  <Form.Field>
-                    <label>Amount</label>
-                    <input type="number" onChange={(ev) => setProductAmount(x.id, parseInt(ev.target.value))} />
-                  </Form.Field>
-                  <Button type="button" color="red" onClick={() => removeProductInput(x.id)}>
-                    Remove this product
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </Card.Group>
-          <Button color="blue" type="button" onClick={addProductInput}>
+        <form>
+          <label>Expense name</label>
+          <input type="text" name="name" onChange={(ev) => setExpensename(ev.target.value)} />
+          {state.products.map((x) => (
+            <div>
+              <label>Product name</label>
+              <input type="text" onChange={(ev) => setProductName(x.id, ev.target.value)} />
+              <label>Quantity</label>
+              <input type="number" onChange={(ev) => setProductQuantity(x.id, parseInt(ev.target.value))} />
+              <label>Amount</label>
+              <input type="number" onChange={(ev) => setProductAmount(x.id, parseInt(ev.target.value))} />
+            </div>
+          ))}
+          <button color="blue" type="button" onClick={addProductInput}>
             Add another product
-          </Button>
-          <Button
-            color="green"
-            type="button"
-            onClick={() => {
-              console.log(state.products);
-            }}
-          >
+          </button>
+          <button color="green" type="button" onClick={async () => await addExpense()}>
             Add expense
-          </Button>
-          <Button color="grey" type="reset">
-            Reset
-          </Button>
-        </Form>
+          </button>
+        </form>
       </ScrollView>
     </SafeAreaView>
   );
