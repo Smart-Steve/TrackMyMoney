@@ -57,7 +57,7 @@ function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   return (
     <BottomTab.Navigator
-      initialRouteName="Summary"
+      initialRouteName="AddExpense" //should be summary
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}

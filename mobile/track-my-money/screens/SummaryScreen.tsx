@@ -15,21 +15,23 @@ const expensesService = new ExpensesService();
 //
 export default function SummaryScreen({ navigation }: RootTabScreenProps<"Summary">) {
   const [state, setState] = useState({ items: [{ header: "", description: "", meta: "" }] });
+  /*
   setInterval(async () => {
     const expenses = await expensesService.GetExpenses();
     if (expenses.length == 0 || expenses.length === state.items.filter((x) => x.header.length > 0).length) {
       return;
     }
     const items = expenses.map((x) => {
+      //const description = x.products.map((p) => `${p.name} ${p.price}zł`).reduce((a, b) => `${a} | ${b}`);
       return {
-        header: x.product.name,
-        description: `${x.product.price}$ * ${x.quantity}`,
-        meta: `${x.amount}$`,
+        header: x.name,
+        description: "test",
+        meta: `${x.amount}$ | ${x.category.name}`,
       };
     });
     setState({ ...state, items });
   }, 3000);
-
+*/
   return (
     <View style={styles.container}>
       <Card.Group style={{ flexDirection: "column", alignItems: "center", margin: "10px" }} items={state.items} />
