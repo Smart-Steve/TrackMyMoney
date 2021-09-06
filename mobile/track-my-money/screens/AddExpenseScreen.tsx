@@ -20,7 +20,7 @@ export default function AddExpenseScreen() {
           setState({ ...state, isLoading: true });
           const product: IProduct = {
             name: x.name,
-            price: Math.fround(x.amount / x.quantity),
+            price: parseFloat((x.amount / x.quantity).toFixed(2)),
           };
           const expense: IExpense = {
             product: product,

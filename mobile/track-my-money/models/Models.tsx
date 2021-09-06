@@ -8,3 +8,5 @@ export interface IExpense {
   quantity: number;
   amount: number;
 }
+
+export interface IIncome {}
