@@ -25,15 +25,20 @@
     "expo-splash-screen": "~0.11.2",
     "expo-status-bar": "~1.0.4",
     "expo-web-browser": "~9.2.0",
+    "formik": "^2.2.9",
+    "formik-semantic-ui-react": "^2.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "react-hook-form": "^7.15.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-reanimated": "~2.2.0",
     "react-native-safe-area-context": "3.2.0",
     "react-native-screens": "~3.4.0",
     "react-native-unimodules": "^0.14.6",
-    "react-native-web": "~0.13.12"
+    "react-native-web": "~0.13.12",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^2.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

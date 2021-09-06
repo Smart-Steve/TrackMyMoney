@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
+import "semantic-ui-css/semantic.min.css";
 
 export default function App() {
   const isLoadingComplete = useCachedResources();

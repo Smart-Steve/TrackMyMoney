@@ -1,26 +1,51 @@
 import React, { useState } from "react";
-import { Alert, Button, StyleSheet, TextInput } from "react-native";
+import { Alert, StyleSheet } from "react-native";
+import { Form, Input, SubmitButton, ResetButton } from "formik-semantic-ui-react";
 
 import { Text, View } from "../components/Themed";
-
-import * as FileSystem from "expo-file-system";
+import { Formik } from "formik";
+import { Label, LabelDetail } from "semantic-ui-react";
+import ExpensesService from "../services/ExpensesService";
+import { IExpense, IProduct } from "../models/Models";
 
 export default function AddExpenseScreen() {
-  const [state, setState] = useState({ name: "test" });
-
-  const saveExpense = async () => {
-    console.log("expense saved");
-    let fileName = FileSystem.documentDirectory + "expense";
-    await FileSystem.writeAsStringAsync(fileName, state.name);
-    let result = await FileSystem.readAsStringAsync(fileName);
-    Alert.alert("Saved", result);
-  };
+  const expensesService = new ExpensesService();
+  const [state, setState] = useState({ isLoading: false });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Name</Text>
-      <TextInput style={styles.input} value={state.name} onChangeText={(x) => setState({ ...state, name: x })} />
-      <Button title="Add expense" onPress={saveExpense} />
+      <Formik
+        initialValues={{ name: "", quantity: 1, amount: 0 }}
+        onSubmit={async (x) => {
+          setState({ ...state, isLoading: true });
+          const product: IProduct = {
+            name: x.name,
+            price: Math.fround(x.amount / x.quantity),
+          };
+          const expense: IExpense = {
+            product: product,
+            quantity: x.quantity,
+            amount: x.amount,
+          };
+          await expensesService.AddExpense(expense);
+          setState({ ...state, isLoading: false });
+        }}
+      >
+        <Form size="large">
+          <LabelDetail>Name</LabelDetail>
+          <Input type="text" name="name" placeholder="Name of bought product" errorPrompt />
+          <LabelDetail>Quantity</LabelDetail>
+          <Input type="number" name="quantity" errorPrompt />
+          <LabelDetail>Amount</LabelDetail>
+          <Input type="number" name="amount" errorPrompt />
+          <SubmitButton fluid primary loading={state.isLoading}>
+            Add expense
+          </SubmitButton>
+          <ResetButton fluid secondary>
+            Reset
+          </ResetButton>
+        </Form>
+      </Formik>
     </View>
   );
 }
