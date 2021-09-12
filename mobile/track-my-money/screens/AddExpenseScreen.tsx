@@ -4,69 +4,39 @@ import ExpensesService from "../services/ExpensesService";
 import { IExpense, IExpenseCategory, IProduct, IProductCategory } from "../models/Models";
 import { jSXElement } from "@babel/types";
 import { ScrollView } from "react-native-gesture-handler";
-import { TextInput } from "react-native-paper";
+import { TextInput, Button, Paragraph, Dialog, Portal, Provider, Card } from "react-native-paper";
+import AddProduct from "../components/AddProduct";
+import { Observable, Subject } from "rxjs";
 
 export default function AddExpenseScreen() {
   const expensesService = new ExpensesService();
   const defaultState = {
-    lastProductId: 0,
     expenseName: "",
-    products: [{ id: 0, name: "", quantity: 1, amount: 0 }],
+    products: [{ id: 0, name: "Test", quantity: 1, amount: 5 }] as IProduct[],
   };
   const [state, setState] = useState(defaultState);
+  const dialogVisiblitySubject = new Subject<boolean>();
+
+  const addProductSubject = new Subject<IProduct>();
+  addProductSubject.subscribe((x) => {
+    setState({
+      ...state,
+      products: [...state.products, x],
+    });
+  });
 
   const resetState = (): void => {
     setState({
       ...state,
-      lastProductId: defaultState.lastProductId,
       expenseName: defaultState.expenseName,
       products: defaultState.products,
     });
   };
 
-  const addProductInput = (): void => {
-    setState({
-      ...state,
-      lastProductId: state.lastProductId + 1,
-      products: [...state.products, { id: state.lastProductId + 1, name: "", quantity: 1, amount: 0 }],
-    });
-  };
-
-  const removeProductInput = (id: number): void => {
-    setState({ ...state, products: state.products.filter((x) => x.id != id) });
-  };
+  const showDialog = () => dialogVisiblitySubject.next(true);
 
   const setExpensename = (value: string): void => {
     setState({ ...state, expenseName: value });
-  };
-
-  const setProductName = (id: number, value: string): void => {
-    const products = state.products;
-    let product = products.filter((x) => x.id === id)[0];
-    product.name = value;
-    setState({
-      ...state,
-      products,
-    });
-  };
-
-  const setProductQuantity = (id: number, value: number): void => {
-    const products = state.products;
-    let product = products.filter((x) => x.id === id)[0];
-    product.quantity = value;
-    setState({
-      ...state,
-      products,
-    });
-  };
-  const setProductAmount = (id: number, value: number): void => {
-    const products = state.products;
-    let product = products.filter((x) => x.id === id)[0];
-    product.amount = value;
-    setState({
-      ...state,
-      products,
-    });
   };
 
   const addExpense = async (): Promise<void> => {
@@ -107,26 +77,24 @@ export default function AddExpenseScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <form>
-          <label>Expense name</label>
-          <input type="text" name="name" onChange={(ev) => setExpensename(ev.target.value)} />
+          <TextInput label="Expense name" mode={"flat"} onKeyPress={(ev) => setExpensename(ev.target.toString())} />
           {state.products.map((x) => (
-            <div>
-              <label>Product name</label>
-              <input type="text" onChange={(ev) => setProductName(x.id, ev.target.value)} />
-              <label>Quantity</label>
-              <input type="number" onChange={(ev) => setProductQuantity(x.id, parseInt(ev.target.value))} />
-              <label>Amount</label>
-              <input type="number" onChange={(ev) => setProductAmount(x.id, parseInt(ev.target.value))} />
-            </div>
+            <Card key={x.id}>
+              <Card.Title title={x.name} />
+              <Card.Content>
+                {x.quantity} * {x.amount}zł
+              </Card.Content>
+            </Card>
           ))}
-          <button color="blue" type="button" onClick={addProductInput}>
+          <Button mode="contained" onPress={showDialog}>
             Add another product
-          </button>
-          <button color="green" type="button" onClick={async () => await addExpense()}>
-            Add expense
-          </button>
+          </Button>
+          <Button mode="contained" onPress={async () => await addExpense()}>
+            Save expense
+          </Button>
         </form>
       </ScrollView>
+      <AddProduct dialogVisiblitySubject={dialogVisiblitySubject} addProductSubject={addProductSubject} />
     </SafeAreaView>
   );
 }
