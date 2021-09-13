@@ -3,7 +3,7 @@ export interface IProduct {
   name: string;
   amount: number;
   quantity: number;
-  category: IProductCategory;
+  categories: IProductCategory[];
 }
 
 export interface IExpense {

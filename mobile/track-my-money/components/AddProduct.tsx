@@ -1,33 +1,38 @@
 import * as React from "react";
-import { TextInput, Button, Paragraph, Dialog, Portal, Provider, Card } from "react-native-paper";
+import {
+  TextInput,
+  Button,
+  Paragraph,
+  Dialog,
+  Portal,
+  Provider,
+  Card,
+  Modal,
+  Surface,
+  Text,
+  DefaultTheme,
+  DarkTheme,
+} from "react-native-paper";
+import DropDown from "react-native-paper-dropdown";
+import { Alert, SafeAreaView, StyleSheet } from "react-native";
 import { Subject } from "rxjs";
-import { Label } from "semantic-ui-react";
 import { IProduct, IProductCategory } from "../models/Models";
+import SelectCategories from "./SelectCategories";
+import { View } from "./Themed";
 
 export default function AddProduct(props: {
   dialogVisiblitySubject: Subject<boolean>;
   addProductSubject: Subject<IProduct>;
 }) {
-  const defaultState = {
+  const [state, setState] = React.useState({
     dialogVisible: false,
+    showDropDown: false,
     id: 0,
     name: "",
     amount: 0,
     quantity: 1,
-    category: { id: 0, name: "Test" } as IProductCategory,
-  };
-  const [state, setState] = React.useState(defaultState);
-  const resetState = (): void => {
-    setState({
-      ...state,
-      dialogVisible: defaultState.dialogVisible,
-      id: defaultState.id,
-      name: defaultState.name,
-      amount: defaultState.amount,
-      quantity: defaultState.quantity,
-      category: defaultState.category,
-    });
-  };
+    categories: [] as IProductCategory[],
+  });
 
   props.dialogVisiblitySubject.subscribe((x) => setState({ ...state, dialogVisible: x }));
 
@@ -37,59 +42,70 @@ export default function AddProduct(props: {
       name: state.name,
       amount: state.amount,
       quantity: state.quantity,
-      category: state.category,
+      categories: state.categories,
     };
     console.log(product);
     props.addProductSubject.next(product);
-    resetState();
+    hideDialog();
   };
   const hideDialog = () => props.dialogVisiblitySubject.next(false);
+
+  const categoriesDialogVisibleSubject = new Subject<boolean>();
+  const saveCategoriesSubject = new Subject<IProductCategory[]>();
+  saveCategoriesSubject.subscribe((x) => setState({ ...state, categories: x }));
 
   return (
     <Provider>
       <Portal>
-        <Dialog visible={state.dialogVisible} onDismiss={hideDialog}>
-          <Dialog.Title>Add product</Dialog.Title>
+        <Dialog visible={state.dialogVisible} onDismiss={hideDialog} theme={DarkTheme}>
           <Dialog.Content>
-            <form>
-              <TextInput
-                label="Name"
-                value={state.name.toString()}
-                onChangeText={(x) => setState({ ...state, name: x })}
-                mode={"outlined"}
-              />
-              <TextInput
-                label="Amount"
-                value={state.amount.toString()}
-                onChangeText={(x) => {
-                  if (x === null || x === undefined || x === "") {
-                    x = "0";
-                  }
-                  setState({ ...state, amount: parseFloat(x) });
-                }}
-                mode={"outlined"}
-                keyboardType={"numeric"}
-              />
-              <TextInput
-                label="Quantity"
-                value={state.quantity.toString()}
-                onChangeText={(x) => {
-                  if (x === null || x === undefined || x === "") {
-                    x = "0";
-                  }
-                  setState({ ...state, quantity: parseFloat(x) });
-                }}
-                mode={"outlined"}
-                keyboardType={"numeric"}
-              />
-              <Button mode="contained" onPress={saveProduct}>
-                Add another product
-              </Button>
-            </form>
+            <Text>Add product</Text>
+            <TextInput
+              label="Name"
+              value={state.name.toString()}
+              onChangeText={(x) => setState({ ...state, name: x })}
+              mode={"outlined"}
+            />
+            <TextInput
+              label="Amount"
+              value={state.amount.toString()}
+              onChangeText={(x) => {
+                if (x === null || x === undefined || x === "") {
+                  x = "0";
+                }
+                setState({ ...state, amount: parseFloat(x) });
+              }}
+              mode={"outlined"}
+              keyboardType={"numeric"}
+            />
+            <TextInput
+              label="Quantity"
+              value={state.quantity.toString()}
+              onChangeText={(x) => {
+                if (x === null || x === undefined || x === "") {
+                  x = "0";
+                }
+                setState({ ...state, quantity: parseFloat(x) });
+              }}
+              mode={"outlined"}
+              keyboardType={"numeric"}
+            />
+            {state.categories !== undefined && state.categories.length > 0 && <Text>Categories:</Text>}
+            {state.categories.map((x) => (
+              <Text key={x.name}>{x.name}</Text>
+            ))}
+            <Button mode="contained" onPress={() => categoriesDialogVisibleSubject.next(true)}>
+              Select categories
+            </Button>
+            <Button mode="contained" onPress={saveProduct}>
+              Save product
+            </Button>
+            <SelectCategories
+              dialogVisiblitySubject={categoriesDialogVisibleSubject}
+              saveCategoriesSubject={saveCategoriesSubject}
+              selectedCategories={state.categories}
+            />
           </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideDialog}>Done</Button>
-          </Dialog.Actions>
         </Dialog>
       </Portal>
     </Provider>
